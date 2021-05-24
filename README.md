@@ -1,2 +1,3 @@
-# the_derivator
-Automatic differentiation in Haskell
+# The Derivator: Automatic differentiation in Haskell
+
+![derivator](https://static01.nyt.com/images/2020/08/10/arts/31comfort-terminator4/31comfort-terminator4-facebookJumbo.jpg)
