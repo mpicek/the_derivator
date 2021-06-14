@@ -19,6 +19,35 @@ class Differentiable a where
 class Evaluate a where
     eval :: Double -> a -> Double
 
+instance Num FunctionOP where
+    (Const a) + (Const b) = Const (a + b)
+    a + b                 = Sum a b
+    (Const a) - (Const b) = Const (a - b)
+    a - (Const b)         = Sum a (Const (-b))
+    a - b                 = Sum a (Mul (Const (-1)) b)
+    (Const a) * (Const b) = Const (a * b)
+    a * b                 = Sum a b
+    negate (Const a)      = Const (-a)
+    negate a              = Mul (Const (-1)) a
+    abs (Const a)         = if a >= 0 then Const a else Const (-a)
+    abs a                 = error "TO BE DONE"
+    signum (Const a)      = if a >= 0 then Const 1 else Const (-1)
+    signum _              = error "TO BE DONE"
+    fromInteger a         = Const (fromIntegral a) -- JESTE SI PROJIT
+
+    
+-- cleanExpr expr: cleans the expression = makes it more readable
+cleanExpr :: FunctionOP -> FunctionOP
+cleanExpr (Sum (Const 0) (Const 0)) = Const 0       -- 0 + 0 = 0
+cleanExpr (Sum (Const 0) x) = x                     -- 0 + x = x
+cleanExpr (Sum x (Const 0)) = x                     -- x + 0 = x
+cleanExpr (Sum (Const x) (Const y)) = Const (x + y) -- c1 + c2 = c3
+cleanExpr (Mul (Const 0) _) = Const 0               -- 0*_ = 0
+cleanExpr (Mul _ (Const 0)) = Const 0               -- _*0 = 0
+cleanExpr (Mul (Const 1) x) = x                     -- 1*x = x
+cleanExpr (Mul x (Const 1)) = x                     -- x*1 = x
+cleanExpr (Poly (Const 0)) = Const 1                -- x^0 = 0
+
 
 -- TODO: tackle the problem of equality of Var and Poly 1
 instance Differentiable FunctionOP where
@@ -48,17 +77,17 @@ instance Show FunctionOP where
     show (Const x)  = show x
     show Var        = "x"
 
-    show (Sum (Const 0) (Const 0)) = ""
-    show (Sum (Const 0) x) = show x
-    show (Sum x (Const 0)) = show x
+    -- show (Sum (Const 0) (Const 0)) = ""
+    -- show (Sum (Const 0) x) = show x
+    -- show (Sum x (Const 0)) = show x
 
-    show (Sum (Const x) (Const y)) = show (x + y)
+    -- show (Sum (Const x) (Const y)) = show (x + y)
     show (Sum x y)  = show x ++ " + " ++ show y
 
-    show (Mul (Const 0) _) = ""
-    show (Mul _ (Const 0)) = ""
-    show (Mul (Const 1) x) = show x
-    show (Mul x (Const 1)) = show x
+    -- show (Mul (Const 0) _) = ""
+    -- show (Mul _ (Const 0)) = ""
+    -- show (Mul (Const 1) x) = show x
+    -- show (Mul x (Const 1)) = show x
     show (Mul x (Poly y)) = show x ++ "*" ++ show (Poly y)
     show (Mul x y) = show x ++ " * " ++ show y
 
