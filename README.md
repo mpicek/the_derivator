@@ -1,9 +1,10 @@
 # THE DERIVATOR: Automatic Differentiation in Haskell
 
-![derivator](https://static01.nyt.com/images/2020/08/10/arts/31comfort-terminator4/31comfort-terminator4-facebookJumbo.jpg)
+**This is a simple application for automatic differentiation in Haskell.**
 
-This is a simple application for automatic differentiation in Haskell.
-Supports all basic functions:
+## Supported functions
+
+**Supports all basic functions:**
   - `Const`                .. a constant
   - `X`                    .. a variable that will be differentiated
   - `Sum a b` (or `a + b`) .. a sum
@@ -16,11 +17,14 @@ Supports all basic functions:
   - `Sin x`                .. `sin x`
   - `Cos x`                .. `cos x`
 
+## Installation and running the program
+
 Install Haskell on your computer, change directory to this folder and run `ghci`.
 Then insert your function and use function `derivative` to differentiate the
 function. You can also use function `eval` to evaluate your function (or
 its derivative) given `x` of type `Double`.
 
+## Examples
 
 Here is an example of creating and differentiating common functions used
 in machine learning - sigmoid and tanh.
@@ -42,5 +46,6 @@ in machine learning - sigmoid and tanh.
 λ> 
 λ> eval 2.5 tanh
 0.9866142981514305
-λ> 
 ```
+
+![derivator](https://static01.nyt.com/images/2020/08/10/arts/31comfort-terminator4/31comfort-terminator4-facebookJumbo.jpg)
