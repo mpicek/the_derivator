@@ -14,6 +14,9 @@ data FunctionOP = Const Double
                 | ExpCustom FunctionOP FunctionOP
                 | Ln FunctionOP
                 | Log FunctionOP FunctionOP
+                | Sin FunctionOP
+                | Cos FunctionOP
+
 
 class Differentiable a where
     derivative :: a -> a
@@ -36,22 +39,6 @@ instance Num FunctionOP where
     signum (Const a)      = if a >= 0 then Const 1 else Const (-1)
     signum _              = error "No signum function"
     fromInteger a         = Const (fromIntegral a) -- JESTE SI PROJIT
-
-
--- cleanExpr expr: cleans the expression = makes it more readable
-cleanExpr :: FunctionOP -> FunctionOP
-cleanExpr X = X
-cleanExpr (Sum (Const 0) (Const 0)) = Const 0       -- 0 + 0 = 0
-cleanExpr (Sum (Const 0) x) = x                     -- 0 + x = x
-cleanExpr (Sum x (Const 0)) = x                     -- x + 0 = x
-cleanExpr (Sum (Const x) (Const y)) = Const (x + y) -- c1 + c2 = c3
-cleanExpr (Mul (Const 0) _) = Const 0               -- 0*_ = 0
-cleanExpr (Mul _ (Const 0)) = Const 0               -- _*0 = 0
-cleanExpr (Mul (Const 1) x) = x                     -- 1*x = x
-cleanExpr (Mul x (Const 1)) = x                     -- x*1 = x
-cleanExpr (Mul (Const a) (Const b)) = Const (a * b)
-cleanExpr (Poly _ (Const 0)) = Const 1              -- x^0 = 0
-cleanExpr x = x
 
 
 instance Differentiable FunctionOP where
@@ -82,6 +69,9 @@ instance Differentiable FunctionOP where
     -- (log_a(x))' = (1/(ln(a) * x)) * x'
     derivative (Log a x) = Mul (Poly (Mul (Ln a) x) (Const (-1))) (derivative x) -- chain rule
 
+    derivative (Sin x)   = Cos x
+    derivative (Cos x)   = Mul (Sin x) (Const (-1))
+
 
 instance Evaluate FunctionOP where
     eval x X = x
@@ -93,6 +83,9 @@ instance Evaluate FunctionOP where
     eval x (ExpCustom a y) = eval x a ** eval x y
     eval x (Ln y)          = log (eval x y)
     eval x (Log a b)       = logBase (eval x a) (eval x b)
+    eval x (Sin a)         = sin (eval x a)
+    eval x (Cos a)         = cos (eval x a)
+
 
 instance Show FunctionOP where
     show X = "x"
@@ -119,5 +112,9 @@ instance Show FunctionOP where
     show (Poly a (Const 1)) = show a
     show (Poly a (Const n)) = "(" ++ show a ++ ")" ++ "^" ++ show n
     show (Poly a n)   = "(" ++ show a ++ ")^(" ++ show n ++ ")"
+
+    show (Sin x)      = "sin(" ++ show x ++ ")"
+    show (Cos x)      = "cos(" ++ show x ++ ")"
+    
 
 
