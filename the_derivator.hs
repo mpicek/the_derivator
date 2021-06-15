@@ -41,36 +41,40 @@ instance Num FunctionOP where
     fromInteger a         = Const (fromIntegral a) -- JESTE SI PROJIT
 
 
+-- In the following differentiation rules, there is always a chain rule used.
+-- Most of the rules are therefore composed of Mul, where the second factor is a
+-- recursive derivative from the chain rule.
 instance Differentiable FunctionOP where
-    derivative X = Const 1
-    derivative (Const _)  = Const 0 -- c' = 0
+    derivative X                  = Const 1
+    derivative (Const _)          = Const 0 -- c' = 0
 
     -- (f + g)' = f' + g'
-    derivative (Sum x y)  = derivative x + derivative y
+    derivative (Sum x y)          = derivative x + derivative y
 
     -- edge cases for Mul
-    derivative (Mul (Const x) y) = Mul (Const x) (derivative y)
-    derivative (Mul x (Const y)) = Mul (Const y) (derivative x)
+    derivative (Mul (Const x) y)  = Mul (Const x) (derivative y)
+    derivative (Mul x (Const y))  = Mul (Const y) (derivative x)
 
     -- (fg)' = f'g + fg'
-    derivative (Mul x y) = (derivative x * y) + (x * derivative y)
+    derivative (Mul x y)          = (derivative x * y) + (x * derivative y)
 
     -- edge cases for Poly
-    derivative (Poly x (Const 0)) = Mul (Const 0) (derivative x) -- chain rule
-    derivative (Poly x (Const 1)) = Mul (Const 1) (derivative x) -- chain rule
-    derivative (Poly x n) = Mul (Mul n (Poly x (Sum n (Const (-1))))) (derivative x) -- chain rule
+    derivative (Poly x (Const 0)) = Mul (Const 0) (derivative x)
+    derivative (Poly x (Const 1)) = Mul (Const 1) (derivative x)
+    derivative (Poly x n)         = Mul (Mul n (Poly x (Sum n (Const (-1))))) (derivative x)
 
-    derivative (Exp x) = Mul (Exp x) (derivative x) -- chain rule
-    derivative (ExpCustom a x) = Mul (Mul (ExpCustom a x) (Ln a)) (derivative x) -- (5^x)' = 5^x*ln5 * x'
+    derivative (Exp x)            = Mul (Exp x) (derivative x)
+    -- differentiating x (not a) ... (5^x)' = 5^x*ln5 * x'
+    derivative (ExpCustom a x)    = Mul (Mul (ExpCustom a x) (Ln a)) (derivative x)
 
-    derivative (Ln x) = Mul (Poly x (Const (-1))) (derivative x)
+    derivative (Ln x)             = Mul (Poly x (Const (-1))) (derivative x)
 
-    -- Differentiating x
+    -- Differentiating x (not a)
     -- (log_a(x))' = (1/(ln(a) * x)) * x'
-    derivative (Log a x) = Mul (Poly (Mul (Ln a) x) (Const (-1))) (derivative x) -- chain rule
+    derivative (Log a x)          = Mul (Poly (Mul (Ln a) x) (Const (-1))) (derivative x) -- chain rule
 
-    derivative (Sin x)   = Cos x
-    derivative (Cos x)   = Mul (Sin x) (Const (-1))
+    derivative (Sin x)            = Mul (Cos x) (derivative x)
+    derivative (Cos x)            = Mul (Mul (Sin x) (Const (-1))) (derivative x)
 
 
 instance Evaluate FunctionOP where
@@ -88,33 +92,33 @@ instance Evaluate FunctionOP where
 
 
 instance Show FunctionOP where
-    show X = "x"
-    show (Const x)  = show x
+    show X                         = "x"
+    show (Const x)                 = show x
 
     show (Sum (Const 0) (Const 0)) = ""
-    show (Sum (Const 0) x) = show x
-    show (Sum x (Const 0)) = show x
+    show (Sum (Const 0) x)         = show x
+    show (Sum x (Const 0))         = show x
     show (Sum (Const a) (Const b)) = show (Const (a + b))
 
-    show (Sum x y)  = "(" ++ show x ++ " + " ++ show y ++ ")"
+    show (Sum x y)                 = "(" ++ show x ++ " + " ++ show y ++ ")"
 
-    show (Mul (Const 0) _) = ""
-    show (Mul _ (Const 0)) = ""
-    show (Mul (Const 1) x) = show x
-    show (Mul x (Const 1)) = show x
+    show (Mul (Const 0) _)         = ""
+    show (Mul _ (Const 0))         = ""
+    show (Mul (Const 1) x)         = show x
+    show (Mul x (Const 1))         = show x
     show (Mul (Const a) (Const b)) = show (Const (a * b))
 
-    show (Mul x (Poly a y)) = show x ++ " * " ++ show (Poly a y)
-    show (Mul x y) = show x ++ " * " ++ show y
+    show (Mul x (Poly a y))        = show x ++ " * " ++ show (Poly a y)
+    show (Mul x y)                 = show x ++ " * " ++ show y
 
-    show (Poly X (Const x)) = "x^" ++ show x
-    show (Poly X x)         = "x^(" ++ show x ++ ")"
-    show (Poly a (Const 1)) = show a
-    show (Poly a (Const n)) = "(" ++ show a ++ ")" ++ "^" ++ show n
-    show (Poly a n)   = "(" ++ show a ++ ")^(" ++ show n ++ ")"
+    show (Poly X (Const x))        = "x^" ++ show x
+    show (Poly X x)                = "x^(" ++ show x ++ ")"
+    show (Poly a (Const 1))        = show a
+    show (Poly a (Const n))        = "(" ++ show a ++ ")" ++ "^" ++ show n
+    show (Poly a n)                = "(" ++ show a ++ ")^(" ++ show n ++ ")"
 
-    show (Sin x)      = "sin(" ++ show x ++ ")"
-    show (Cos x)      = "cos(" ++ show x ++ ")"
+    show (Sin x)                   = "sin(" ++ show x ++ ")"
+    show (Cos x)                   = "cos(" ++ show x ++ ")"
     
 
 
