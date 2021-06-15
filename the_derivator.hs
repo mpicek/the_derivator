@@ -1,10 +1,6 @@
 -- Author:  Martin Picek
 -- Program: THE DERIVATOR
 
--- TODO: derivace Log x a (jakoze derivace toho x)
--- TODO: derivace x^x
--- TODO: derivace Log x x (jako v obojim muze bejt x, neni to jen primo Log x x)
-
 {-
 DOCUMENTATION
 
