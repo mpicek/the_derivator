@@ -5,6 +5,27 @@
 -- TODO: derivace x^x
 -- TODO: derivace Log x x (jako v obojim muze bejt x, neni to jen primo Log x x)
 
+{-
+DOCUMENTATION
+
+FunctionOP - a data type that holds all kinds of functions.
+These functions should have derivatives. Therefore, there is a class Differentiable
+that ensures that its instances have a derivation. This is why we need to
+create an instance of Differentiable for FunctionOP data type.
+
+We also provide Num instance for FunctionOP data type. It makes
+it way more easier for us to read and parse expressions from the input. It is
+what the Num class provides for us.
+  - Extra note: function fromInteger gets an Integer and does something with that
+      -> "does something" = we create a constant Const x
+
+Class Evaluatable provides us with eval function that replaces all Xs by
+a Double and evaluates the expression.
+
+Finally, we create an instance of the class Show, so that we print the expressions
+more nicely.
+-}
+
 data FunctionOP = Const Double
                 | X
                 | Sum FunctionOP FunctionOP
@@ -21,7 +42,7 @@ data FunctionOP = Const Double
 class Differentiable a where
     derivative :: a -> a
 
-class Evaluate a where
+class Evaluateable a where
     eval :: Double -> a -> Double
 
 instance Num FunctionOP where
@@ -77,7 +98,7 @@ instance Differentiable FunctionOP where
     derivative (Cos x)            = Mul (Mul (Sin x) (Const (-1))) (derivative x)
 
 
-instance Evaluate FunctionOP where
+instance Evaluateable FunctionOP where
     eval x X = x
     eval _ (Const c)       = c
     eval x (Mul y z)       = eval x y * eval x z
