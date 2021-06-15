@@ -5,7 +5,6 @@
 -- TODO: Pri vypisovani derivace asi evaluovat vse, co jde (napr n - 1) bude
 --       typicky treba (3 - 1), tak tam proste dat 2
 -- TODO udelat nezavisly na Double
--- TODO chain rule
 
 import Debug.Trace
 debug = flip trace
@@ -15,7 +14,6 @@ data FunctionOP = Const Double
                 | Sum FunctionOP FunctionOP
                 | Mul FunctionOP FunctionOP
                 | Poly FunctionOP FunctionOP -- for example (?)^3
-
                 | Exp FunctionOP
                 | ExpCustom FunctionOP FunctionOP
                 | Ln FunctionOP
@@ -38,9 +36,9 @@ instance Num FunctionOP where
     negate (Const a)      = Const (-a)
     negate a              = Mul (Const (-1)) a
     abs (Const a)         = if a >= 0 then Const a else Const (-a)
-    abs a                 = error "TO BE DONE"
+    abs a                 = error "No absolute value"
     signum (Const a)      = if a >= 0 then Const 1 else Const (-1)
-    signum _              = error "TO BE DONE"
+    signum _              = error "No signum function"
     fromInteger a         = Const (fromIntegral a) -- JESTE SI PROJIT
 
 
@@ -65,9 +63,7 @@ instance Differentiable FunctionOP where
     derivative (Const _)  = Const 0 -- c' = 0
 
     -- (f + g)' = f' + g'
-    -- derivative (Sum (Const x) (Const y)) = 
     derivative (Sum x y)  = derivative x + derivative y
-
 
     derivative (Mul (Const x) y) = Mul (Const x) (derivative y)
     derivative (Mul x (Const y)) = Mul (Const y) (derivative x)
@@ -81,18 +77,27 @@ instance Differentiable FunctionOP where
     derivative (Poly x n) = Mul (Mul n (Poly x (Sum n (Const (-1))))) (derivative x) -- chain rule
 
     derivative (Exp x) = Mul (Exp x) (derivative x) -- chain rule
+    derivative (ExpCustom a x) = Mul (Mul (ExpCustom a x) (Ln a)) (derivative x) -- (5^x)' = 5^x*ln5 * x'
 
-    -- TODO chain rule
-    derivative (ExpCustom a x) = Mul (ExpCustom a x) (Ln a) -- (5^x)' = 5^x*ln5
-    -- derivative Ln x = Mult (
+    derivative (Ln x) = Mul (Poly x (Const (-1))) (derivative x)
+
+    -- TODO: derivace Log x a
+
+    -- Differentiating x
+    -- (log_a(x))' = (1/(ln(a) * x)) * x'
+    derivative (Log a x) = Mul (Poly (Mul (Ln a) x) (Const (-1))) (derivative x) -- chain rule
 
 
 instance Evaluate FunctionOP where
     eval x X = x
-    eval _ (Const c)  = c
-    eval x (Mul y z)  = eval x y * eval x z
-    eval x (Sum y z)  = eval x y + eval x z
-    eval x (Poly a n)   = eval x a ** eval x n
+    eval _ (Const c)       = c
+    eval x (Mul y z)       = eval x y * eval x z
+    eval x (Sum y z)       = eval x y + eval x z
+    eval x (Poly a n)      = eval x a ** eval x n
+    eval x (Exp y)         = exp (eval x y)
+    eval x (ExpCustom a y) = eval x a ** eval x y
+    eval x (Ln y)          = log (eval x y)
+    eval x (Log a b)       = logBase (eval x a) (eval x b)
 
 instance Show FunctionOP where
     show X = "x"
