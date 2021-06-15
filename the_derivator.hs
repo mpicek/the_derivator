@@ -138,6 +138,11 @@ instance Show FunctionOP where
     show (Poly a (Const n))        = "(" ++ show a ++ ")" ++ "^" ++ show n
     show (Poly a n)                = "(" ++ show a ++ ")^(" ++ show n ++ ")"
 
+    show (Exp x)                   = "e^(" ++ show x ++ ")"
+    show (ExpCustom a x)           = show a ++ "^(" ++ show x ++ ")"
+    show (Ln x)                    = "ln(" ++ show x ++ ")"
+    show (Log a x)                 = "log_(" ++ show a ++ ")(" ++ show x ++ ")"
+
     show (Sin x)                   = "sin(" ++ show x ++ ")"
     show (Cos x)                   = "cos(" ++ show x ++ ")"
     
