@@ -1,6 +1,6 @@
 # THE DERIVATOR: Automatic Differentiation in Haskell
 
-**This is a simple application for automatic differentiation in Haskell.**
+**This is a simple application for automatic differentiation in Haskell. You will never have to do the differentiation homework again to your maths class.**
 
 ## Supported functions
 
