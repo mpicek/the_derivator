@@ -1,20 +1,16 @@
 -- Author:  Martin Picek
 -- Program: THE DERIVATOR
 
--- TODO: Suma vice clenu (tzn. seznam [FunctionOP])
--- TODO: Pri vypisovani derivace asi evaluovat vse, co jde (napr n - 1) bude
---       typicky treba (3 - 1), tak tam proste dat 2
--- TODO udelat nezavisly na Double
-
-import Debug.Trace
-debug = flip trace
+-- TODO: derivace Log x a (jakoze derivace toho x)
+-- TODO: derivace x^x
+-- TODO: derivace Log x x (jako v obojim muze bejt x, neni to jen primo Log x x)
 
 data FunctionOP = Const Double
                 | X
                 | Sum FunctionOP FunctionOP
                 | Mul FunctionOP FunctionOP
-                | Poly FunctionOP FunctionOP -- for example (?)^3
-                | Exp FunctionOP
+                | Poly FunctionOP FunctionOP -- for example (?)^3 (X is not in an exponent)
+                | Exp FunctionOP             -- X in exponent
                 | ExpCustom FunctionOP FunctionOP
                 | Ln FunctionOP
                 | Log FunctionOP FunctionOP
@@ -65,13 +61,14 @@ instance Differentiable FunctionOP where
     -- (f + g)' = f' + g'
     derivative (Sum x y)  = derivative x + derivative y
 
+    -- edge cases for Mul
     derivative (Mul (Const x) y) = Mul (Const x) (derivative y)
     derivative (Mul x (Const y)) = Mul (Const y) (derivative x)
 
     -- (fg)' = f'g + fg'
     derivative (Mul x y) = (derivative x * y) + (x * derivative y)
 
-    -- derivative (Poly c 0) = Poly (Mul c n) (Sum n (Const (-1)))
+    -- edge cases for Poly
     derivative (Poly x (Const 0)) = Mul (Const 0) (derivative x) -- chain rule
     derivative (Poly x (Const 1)) = Mul (Const 1) (derivative x) -- chain rule
     derivative (Poly x n) = Mul (Mul n (Poly x (Sum n (Const (-1))))) (derivative x) -- chain rule
@@ -80,8 +77,6 @@ instance Differentiable FunctionOP where
     derivative (ExpCustom a x) = Mul (Mul (ExpCustom a x) (Ln a)) (derivative x) -- (5^x)' = 5^x*ln5 * x'
 
     derivative (Ln x) = Mul (Poly x (Const (-1))) (derivative x)
-
-    -- TODO: derivace Log x a
 
     -- Differentiating x
     -- (log_a(x))' = (1/(ln(a) * x)) * x'
@@ -103,20 +98,24 @@ instance Show FunctionOP where
     show X = "x"
     show (Const x)  = show x
 
-    -- show (Sum (Const 0) (Const 0)) = ""
-    -- show (Sum (Const 0) x) = show x
-    -- show (Sum x (Const 0)) = show x
+    show (Sum (Const 0) (Const 0)) = ""
+    show (Sum (Const 0) x) = show x
+    show (Sum x (Const 0)) = show x
+    show (Sum (Const a) (Const b)) = show (Const (a + b))
 
-    -- show (Sum (Const x) (Const y)) = show (x + y)
     show (Sum x y)  = "(" ++ show x ++ " + " ++ show y ++ ")"
 
-    -- show (Mul (Const 0) _) = ""
-    -- show (Mul _ (Const 0)) = ""
-    -- show (Mul (Const 1) x) = show x
-    -- show (Mul x (Const 1)) = show x
+    show (Mul (Const 0) _) = ""
+    show (Mul _ (Const 0)) = ""
+    show (Mul (Const 1) x) = show x
+    show (Mul x (Const 1)) = show x
+    show (Mul (Const a) (Const b)) = show (Const (a * b))
+
     show (Mul x (Poly a y)) = show x ++ " * " ++ show (Poly a y)
     show (Mul x y) = show x ++ " * " ++ show y
 
+    show (Poly X (Const x)) = "x^" ++ show x
+    show (Poly X x)         = "x^(" ++ show x ++ ")"
     show (Poly a (Const 1)) = show a
     show (Poly a (Const n)) = "(" ++ show a ++ ")" ++ "^" ++ show n
     show (Poly a n)   = "(" ++ show a ++ ")^(" ++ show n ++ ")"
